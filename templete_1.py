@@ -8,7 +8,9 @@ import itertools
 import spacy
 from googletrans import Translator
 #from download_images import *
-from each_video_generation import *
+#from each_video_generation import *
+
+from video_processing_final_edit import * 
 
 #from anim_effects import *
 
@@ -38,27 +40,29 @@ def vortex(screenpos,i,nletters):
     if i%2 : v[1] = -v[1]
     return lambda t: screenpos+400*d(t)*rotMatrix(0.5*d(t)*a).dot(v)
     
-def cascade(screenpos,i,nletters):
-    v = np.array([0,-1])
-    d = lambda t : 1 if t<0 else abs(np.sinc(t)/(1+t**4))
-    return lambda t: screenpos+v*400*d(t-0.15*i)
-
-def arrive(screenpos,i,nletters):
-    v = np.array([-1,0])
-    d = lambda t : max(0, 3-3*t)
-    return lambda t: screenpos-400*v*d(t-0.2*i)
-    
-def vortexout(screenpos,i,nletters):
-    d = lambda t : max(0,t) #damping
-    a = i*np.pi/ nletters # angle of the movement
-    v = rotMatrix(a).dot([-1,0])
-    if i%2 : v[1] = -v[1]
-    return lambda t: screenpos+400*d(t-0.1*i)*rotMatrix(-0.2*d(t)*a).dot(v)
-
-def moveLetters(letters, funcpos):
-    return [ letter.set_pos(funcpos(letter.screenpos,i,len(letters)))
-              for i,letter in enumerate(letters)]
-    
+# =============================================================================
+# def cascade(screenpos,i,nletters):
+#     v = np.array([0,-1])
+#     d = lambda t : 1 if t<0 else abs(np.sinc(t)/(1+t**4))
+#     return lambda t: screenpos+v*400*d(t-0.15*i)
+# 
+# def arrive(screenpos,i,nletters):
+#     v = np.array([-1,0])
+#     d = lambda t : max(0, 3-3*t)
+#     return lambda t: screenpos-400*v*d(t-0.2*i)
+#     
+# def vortexout(screenpos,i,nletters):
+#     d = lambda t : max(0,t) #damping
+#     a = i*np.pi/ nletters # angle of the movement
+#     v = rotMatrix(a).dot([-1,0])
+#     if i%2 : v[1] = -v[1]
+#     return lambda t: screenpos+400*d(t-0.1*i)*rotMatrix(-0.2*d(t)*a).dot(v)
+# 
+# def moveLetters(letters, funcpos):
+#     return [ letter.set_pos(funcpos(letter.screenpos,i,len(letters)))
+#               for i,letter in enumerate(letters)]
+#     
+# =============================================================================
 def convert_errors(title):
     new_t=[]
     n_t= title.encode('unicode-escape').split(b'\\')
@@ -80,12 +84,11 @@ def convert_errors(title):
     
     return new_string
 
-screensize = (1920,800)
+screensize = (460,720)
 
 def text_anim(text,title_number):
-    txtClip = TextClip(convert_errors(text),color='white', font="Mangal.ttf",
-                       kerning =5, fontsize=100)
-    cvc = CompositeVideoClip( [txtClip.set_pos('center')],
+    txtClip = TextClip(convert_errors(text),color='white', font="Mangal.ttf", fontsize=40)
+    cvc = CompositeVideoClip([txtClip.set_pos('center')],
                             size=screensize)
     
     # WE USE THE PLUGIN findObjects TO LOCATE AND SEPARATE EACH LETTER
@@ -103,7 +106,7 @@ def text_anim(text,title_number):
     # WE CONCATENATE EVERYTHING AND WRITE TO A FILE
     
     final_clip = concatenate_videoclips(clips)
-    final_clip.write_videofile('top'+str(video_number)+'.mp4',fps=25,codec='mpeg4')
+    final_clip.write_videofile('top'+str(video_number)+'.mp4',fps=25)
 
 
 # =============================================================================
@@ -229,12 +232,14 @@ def urlfinder(keywords):
     print(imageurl)
     return imageurl[:10],specs[:10],title[:10]
 
-def multiple_video(title,desc):
-    eng_text= get_transalation(title)
-    get_urls =urlfinder(eng_text)
-    result_links = get_urls[0]
-    req_video = Video_Processing(result_links,title,desc)
-
+# =============================================================================
+# def multiple_video(title,desc):
+#     eng_text= get_transalation(title)
+#     get_urls =urlfinder(eng_text)
+#     result_links = get_urls[0]
+#     req_video = Video_Processing(result_links,title,desc)
+# 
+# =============================================================================
 
 all_sent ={}
   
@@ -246,7 +251,11 @@ all_dict=[{'title':"कॉपर कैन्यन, सिएरा माद�
           {'title':"एंटीलोप कैनियन, एरिज़ोना ।", 'desc':"एंटेलोप कैनियन अमेरिकी दक्षिण पश्चिम में एक स्लॉट कैनियन (और गंभीर इंस्टाग्राम डार्लिंग) है। इसका नवाजो नाम उस स्थान पर अनुवाद करता है जहां पानी चट्टानों से गुजरता है ।"}]
 
 
-all_video_names = []
+video_names = []
+intermediate_video_names=[]
+intermediate_title_names=[]
+convert_command = 'ffmpeg -i "concat:'
+title_names = []
 title_number = 0
 for each_dict in all_dict:
     video_title = each_dict['title']
@@ -257,16 +266,32 @@ for each_dict in all_dict:
     get_urls =urlfinder(eng_text)
     result_links = get_urls[0]
     if len(result_links)>0:
-        file_name = Video_Processing(result_links,video_title,video_title)
-        title_anim =text_anim(video_title,title_number)
-        all_video_names.append(file_name)
-        
-        
-        
-        split_name = file_name.split('.')[0]+ '_int.ts'
-        intermediate_names.append(split_name)
+        file_name = Video_Processing(result_links,video_title,video_desc)
+        video_names.append(file_name)
+        split_video_name = file_name.split('.')[0]+ '_int.ts'
+        intermediate_names.append(split_video_name)
         convert_command = convert_command + split_name + '|'
-        command = 'ffmpeg -i '+ file_name + ' -c copy -bsf:v h264_mp4toannexb -f mpegts '+ split_name
+        command = 'ffmpeg -i '+ file_name + ' -c copy -bsf:v h264_mp4toannexb -f mpegts '+ split_video_name
         os.system(command)
         
+        
+        title_anim =text_anim(video_title,title_number)
+        title_names.append(title_anim)
+        split_title_name = file_name.split('.')[0]+ '_int.ts'
+        intermediate_title_names.append(split_video_name)
+        convert_command = convert_command + split_title_name + '|'
+        command = 'ffmpeg -i '+ title_anim + ' -c copy -bsf:v h264_mp4toannexb -f mpegts '+ split_title_name
+        os.system(command)
+        
+
+convert_command=remove_at(len(convert_command)-1, convert_command)
+convert_command +='" -c copy -bsf:a aac_adtstoasc ' + post_title + '.mp4'
+os.system(convert_command)
+    
+        
+        
+        
+    
+    
+    
         
