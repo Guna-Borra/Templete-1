@@ -19,8 +19,8 @@ from google.cloud import texttospeech
 from scipy.spatial import distance
 #https://anaconda.org/conda-forge/ffmpeg
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/home/Downloads/Video_Generation_Complete/service_account.json"
-client = texttospeech.TextToSpeechClient()
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/home/Downloads/Video_Generation_Complete/service_account.json"
+#client = texttospeech.TextToSpeechClient()
 
 image_dest   =  "1_old_test_1.jpg"
 detection_length  = 2 
@@ -194,7 +194,7 @@ def GenerateSpeech(text):
     input_text = texttospeech.types.SynthesisInput(ssml=ssml)
     
     #synthesis_input = texttospeech.types.SynthesisInput(text=text)
-    
+    """
     voice = texttospeech.types.VoiceSelectionParams(
         name="hi-IN-Wavenet-A", 
         language_code="hi-IN"
@@ -226,7 +226,7 @@ def GenerateSpeech(text):
     mixed = audio1.overlay(audio2) 
     Final_Audio = "Final_Audio"+"_"+str(video_number)+".wav"
     mixed.export(Final_Audio, format='wav')
-    return halfway_point, Trimmed_background, speech_gtts, Final_Audio
+    return halfway_point, Trimmed_background, speech_gtts, Final_Audio"""
 
 def ProcessImages():
     #############
