@@ -174,7 +174,7 @@ def DownloadImages(result_links):
             result = "Image un-available to Download"
             #print(result)
             
-def GenerateSpeech(text):
+"""def GenerateSpeech(text):
     global video_number
     ###########
     #Step 2 : 
@@ -194,7 +194,7 @@ def GenerateSpeech(text):
     input_text = texttospeech.types.SynthesisInput(ssml=ssml)
     
     #synthesis_input = texttospeech.types.SynthesisInput(text=text)
-    """
+    
     voice = texttospeech.types.VoiceSelectionParams(
         name="hi-IN-Wavenet-A", 
         language_code="hi-IN"
